@@ -1,4 +1,18 @@
-import type { TMDBListResponse, MovieDetail, Genre } from "@/app/lib/types";
+export type Genre = { id: number; name: string };
+export type MovieDetail = {
+  id: number;
+  title: string;
+  overview: string;
+  release_date: string;
+  genres?: Genre[];
+  // add fields as needed
+};
+export type TMDBListResponse = {
+  page: number;
+  results: MovieDetail[];
+  total_pages: number;
+  total_results: number;
+};
 
 const BASE_URL = "https://api.themoviedb.org/3";
 
