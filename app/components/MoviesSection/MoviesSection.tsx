@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, Suspense } from "react";
-import { getMovies, searchMovies } from "@/app/lib/api";
+import { getMovies, searchMovies } from "@/app/lib/api.type";
 import { TMDBListResponse, Movie } from "@/app/types/tmdb";
 import MovieGrid from "@/app/components/MovieGrid/MovieGrid";
 import SkeletonCard from "@/app/components/SkeletonCard/SkeletonCard";

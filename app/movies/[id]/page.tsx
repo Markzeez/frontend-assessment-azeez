@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import Image from "next/image";
-import { getMovieById } from "@/app/lib/api";
+import { getMovieById } from "@/app/lib/api.type";
 import Breadcrumb from "@/app/components/Breadcrumb/Breadcrumb";
 
 interface MoviePageProps {

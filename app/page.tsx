@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { getMovies, searchMovies } from "@/app/lib/api";
+import { getMovies, searchMovies } from "@/app/lib/api.type";
 import { TMDBListResponse } from "@/app/types/tmdb";
 import SearchBar from "@/app/components/SearchBar/SearchBar";
 import MoviesSection from "@/app/components/MoviesSection/MoviesSection";

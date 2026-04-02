@@ -1,3 +1,5 @@
+import type { TMDBListResponse, MovieDetail, Genre } from "@/app/lib/types";
+
 const BASE_URL = "https://api.themoviedb.org/3";
 
 const headers = {
