@@ -5,22 +5,37 @@ import { useRouter, useSearchParams } from "next/navigation";
 interface PaginationProps {
   currentPage: number;
   totalPages: number;
+  onPageChange?: (page: number) => void | Promise<void>;
 }
 
-export default function Pagination({ currentPage, totalPages }: PaginationProps) {
+export default function Pagination({
+  currentPage,
+  totalPages,
+  onPageChange,
+}: PaginationProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const updatePage = (page: number) => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("page", page.toString());
-    router.push(`?${params.toString()}`);
+  // Central handler (decides behavior)
+  const changePage = (page: number) => {
+    if (page < 1 || page > totalPages) return;
+
+    // If parent controls pagination (your MoviesSection)
+    if (onPageChange) {
+      onPageChange(page);
+    } else {
+      // Fallback: URL-based pagination
+      const params = new URLSearchParams(searchParams.toString());
+      params.set("page", page.toString());
+      router.push(`?${params.toString()}`);
+    }
   };
 
-  const getVisiblePages = () => {
+  // Generate page numbers with "..."
+  const getVisiblePages = (): (number | string)[] => {
     const delta = 2;
-    const range = [];
-    const rangeWithDots = [];
+    const range: number[] = [];
+    const pages: (number | string)[] = [];
 
     for (
       let i = Math.max(2, currentPage - delta);
@@ -30,59 +45,62 @@ export default function Pagination({ currentPage, totalPages }: PaginationProps)
       range.push(i);
     }
 
+    // Start
     if (currentPage - delta > 2) {
-      rangeWithDots.push(1, "...");
+      pages.push(1, "...");
     } else {
-      rangeWithDots.push(1);
+      pages.push(1);
     }
 
-    rangeWithDots.push(...range);
+    pages.push(...range);
 
+    // End
     if (currentPage + delta < totalPages - 1) {
-      rangeWithDots.push("...", totalPages);
+      pages.push("...", totalPages);
     } else if (totalPages > 1) {
-      rangeWithDots.push(totalPages);
+      pages.push(totalPages);
     }
 
-    return rangeWithDots;
+    return pages;
   };
 
+  // Don't render if only one page
   if (totalPages <= 1) return null;
 
   return (
-    <div className="flex items-center justify-center space-x-2 mt-8">
-      {/* Previous Button */}
+    <div className="flex items-center justify-center gap-2 mt-8 flex-wrap">
+      {/* Previous */}
       <button
-        onClick={() => updatePage(currentPage - 1)}
-        disabled={currentPage <= 1}
-        className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+        onClick={() => changePage(currentPage - 1)}
+        disabled={currentPage === 1}
+        className="px-3 py-2 text-sm font-medium border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        Previous
+        Prev
       </button>
 
       {/* Page Numbers */}
       {getVisiblePages().map((page, index) => (
         <button
           key={index}
-          onClick={() => typeof page === "number" && updatePage(page)}
+          onClick={() => typeof page === "number" && changePage(page)}
           disabled={page === "..."}
           className={`px-3 py-2 text-sm font-medium rounded-md ${
             page === currentPage
-              ? "text-blue-600 bg-blue-50 border border-blue-500"
+              ? "bg-blue-500 text-white border border-blue-500"
               : page === "..."
-              ? "text-gray-700 bg-white border border-gray-300 cursor-default"
-              : "text-gray-500 bg-white border border-gray-300 hover:bg-gray-50"
+              ? "cursor-default border border-gray-300 text-gray-500"
+              : "border border-gray-300 text-gray-600 hover:bg-gray-50"
           }`}
         >
           {page}
         </button>
       ))}
 
-      {/* Next Button */}
+      {/* Next */}
       <button
-        onClick={() => updatePage(currentPage + 1)}
-        disabled={currentPage >= totalPages}
-        className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+        onClick={() => changePage(currentPage + 1)}
+        disabled={currentPage === totalPages}
+        className="px-3 py-2 text-sm font-medium border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
       >
         Next
       </button>

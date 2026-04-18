@@ -1,0 +1,42 @@
+.nav {
+  margin-bottom: 24px;
+}
+
+.list {
+  list-style: none;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.link {
+  font-size: 13px;
+  color: var(--text-secondary);
+  transition: color var(--transition);
+}
+
+.link:hover {
+  color: var(--accent);
+}
+
+.sep {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.current {
+  font-size: 13px;
+  color: var(--text-muted);
+  /* truncate long movie titles */
+  max-width: 300px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

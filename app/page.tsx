@@ -1,71 +1,68 @@
 import { Suspense } from "react";
-import { getMovies, searchMovies } from "@/app/lib/api.type";
-import { TMDBListResponse } from "@/app/types/tmdb";
-import SearchBar from "@/app/components/SearchBar/SearchBar";
-import MoviesSection from "@/app/components/MoviesSection/MoviesSection";
-import EmptyState from "@/app/components/EmptyState/EmptyState";
+import { getGenres, searchMovies } from "@/lib/api";
+import { MovieGrid } from "@/components/MovieGrid/MovieGrid";
+import { SearchBar } from "@/components/SearchBar/SearchBar";
+import { GenreFilter } from "@/components/GenreFilter/GenreFilter";
+import { Pagination } from "@/components/Pagination/Pagination";
+import { EmptyState } from "@/components/EmptyState/EmptyState";
+import { SkeletonGrid } from "@/components/SkeletonCard/SkeletonCard";
+import styles from "./page.module.css";
 
-interface PageProps {
-  searchParams: {
-    page?: string;
+interface HomePageProps {
+  searchParams: Promise<{
     query?: string;
     genre?: string;
-  };
+    page?: string;
+  }>;
 }
 
-async function getMovieData(searchParams: PageProps["searchParams"]): Promise<TMDBListResponse> {
-  const page = parseInt(searchParams.page || "1", 10);
-  const query = searchParams.query;
-  const genre = searchParams.genre;
+export default async function HomePage({ searchParams }: HomePageProps) {
+  const params = await searchParams;
+  const query = params.query ?? "";
+  const genre = params.genre ?? "";
+  const page = Math.max(1, parseInt(params.page ?? "1", 10));
 
-  if (query) {
-    return searchMovies(query, page, genre);
-  } else {
-    return getMovies(page);
-  }
-}
-
-export default async function Home({ searchParams }: PageProps) {
-  const currentPage = parseInt(searchParams.page || "1", 10);
-  const query = searchParams.query;
-  const genre = searchParams.genre;
-
-  let movieData: TMDBListResponse;
-
-  try {
-    movieData = await getMovieData(searchParams);
-  } catch (error) {
-    console.error("Failed to fetch movies:", error);
-    return (
-      <div className="min-h-screen bg-gray-50 py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <EmptyState message="Failed to load movies. Please try again later." />
-        </div>
-      </div>
-    );
-  }
-
-  const { results: movies, total_pages: totalPages } = movieData;
+  const [{ results, total_pages }, genres] = await Promise.all([
+    searchMovies(query, page, genre),
+    getGenres(),
+  ]);
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            {query ? `Search Results for "${query}"` : "Popular Movies"}
-          </h1>
-          <Suspense fallback={<div className="w-full max-w-md mx-auto h-12 bg-gray-200 animate-pulse rounded"></div>}>
-            <SearchBar />
-          </Suspense>
-        </div>
+    <div className={styles.page}>
+      <div className={styles.hero}>
+        <h1 className={styles.heroTitle}>Discover Movies</h1>
+        <p className={styles.heroSub}>
+          {total_pages > 0
+            ? `${results.length > 0 ? "Browsing" : "No results in"} ${query ? `results for "${query}"` : "popular films"}`
+            : "Search the world's largest movie database"}
+        </p>
+      </div>
 
-        <MoviesSection
-          initialMovies={movies}
-          totalPages={totalPages}
-          currentPage={currentPage}
-          query={query}
-          genre={genre}
-        />
+      <div className={styles.controls}>
+        <Suspense fallback={<div className={styles.searchFallback} />}>
+          <SearchBar />
+        </Suspense>
+        <Suspense fallback={null}>
+          <GenreFilter genres={genres} />
+        </Suspense>
+      </div>
+
+      <div className={styles.results}>
+        {results.length === 0 ? (
+          <EmptyState query={query} />
+        ) : (
+          <>
+            <Suspense fallback={<SkeletonGrid count={20} />}>
+              <MovieGrid movies={results} />
+            </Suspense>
+
+            <div className={styles.pagination}>
+              <Suspense fallback={null}>
+                <Pagination currentPage={page} totalPages={total_pages} />
+              </Suspense>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

@@ -1,0 +1,29 @@
+.wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.pill {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 400;
+  padding: 6px 14px;
+  border-radius: 100px;
+  transition: color var(--transition), border-color var(--transition), background var(--transition);
+  white-space: nowrap;
+}
+
+.pill:hover {
+  color: var(--text-primary);
+  border-color: var(--border-hover);
+}
+
+.pill.active {
+  background: var(--accent-dim);
+  border-color: var(--accent);
+  color: var(--accent);
+  font-weight: 500;
+}

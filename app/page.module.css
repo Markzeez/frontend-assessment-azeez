@@ -1,0 +1,51 @@
+.page {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 24px 60px;
+}
+
+.hero {
+  padding: 48px 0 36px;
+}
+
+.heroTitle {
+  font-family: var(--font-display);
+  font-size: clamp(40px, 6vw, 72px);
+  letter-spacing: 0.03em;
+  color: var(--text-primary);
+  line-height: 1;
+  margin-bottom: 10px;
+}
+
+.heroSub {
+  font-size: 15px;
+  color: var(--text-secondary);
+}
+
+.controls {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 32px;
+}
+
+@media (min-width: 768px) {
+  .controls {
+    flex-direction: column;
+  }
+}
+
+.searchFallback {
+  height: 46px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+
+.results {
+  min-height: 400px;
+}
+
+.pagination {
+  margin-top: 48px;
+}

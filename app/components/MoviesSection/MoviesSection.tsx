@@ -1,8 +1,11 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
-import { getMovies, searchMovies } from "@/app/lib/api.type";
-import { TMDBListResponse, Movie } from "@/app/types/tmdb";
+"use client";
+
+import { useState, useEffect } from "react";
+import { getMovies, searchMovies } from "@/app/lib/api.type";       
+import { TMDBListResponse } from "@/app/lib/api.type";         
+import { Movie } from "@/app/types/tmdb";                       
 import MovieGrid from "@/app/components/MovieGrid/MovieGrid";
 import SkeletonCard from "@/app/components/SkeletonCard/SkeletonCard";
 import EmptyState from "@/app/components/EmptyState/EmptyState";
@@ -15,6 +18,8 @@ interface MoviesSectionProps {
   query?: string;
   genre?: string;
 }
+
+
 
 function SkeletonGrid() {
   return (
@@ -29,27 +34,26 @@ function SkeletonGrid() {
 export default function MoviesSection({
   initialMovies,
   totalPages,
-  currentPage,
+  currentPage: initialPage,
   query,
   genre
 }: MoviesSectionProps) {
   const [movies, setMovies] = useState<Movie[]>(initialMovies);
   const [isLoading, setIsLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(initialPage);
   const [currentTotalPages, setCurrentTotalPages] = useState(totalPages);
 
-  // Show skeleton cards for 2 seconds initially
-  const [showSkeleton, setShowSkeleton] = useState(true);
-
+  // Sync state if props change (useful for search/filter updates)
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowSkeleton(false);
-    }, 2000); // Show skeleton for 2 seconds
-
-    return () => clearTimeout(timer);
-  }, []);
+    setMovies(initialMovies);
+    setCurrentTotalPages(totalPages);
+    setCurrentPage(initialPage);
+  }, [initialMovies, totalPages, initialPage]);
 
   const handlePageChange = async (page: number) => {
     setIsLoading(true);
+    setCurrentPage(page); // Update local page state immediately
+    
     try {
       let movieData: TMDBListResponse;
       if (query) {
@@ -57,8 +61,11 @@ export default function MoviesSection({
       } else {
         movieData = await getMovies(page);
       }
-      setMovies(movieData.results);
+      setMovies(movieData.results as Movie[]);
       setCurrentTotalPages(movieData.total_pages);
+      
+      // Scroll to top on page change for better UX
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (error) {
       console.error("Failed to fetch movies:", error);
     } finally {
@@ -66,11 +73,8 @@ export default function MoviesSection({
     }
   };
 
-  if (showSkeleton) {
-    return <SkeletonGrid />;
-  }
-
-  if (movies.length === 0) {
+  // 1. Check for empty state first, BUT only if we aren't loading
+  if (movies.length === 0 && !isLoading) {
     return (
       <EmptyState
         message={
@@ -82,19 +86,23 @@ export default function MoviesSection({
     );
   }
 
+  // 2. Render UI
   return (
-    <Suspense fallback={<SkeletonGrid />}>
+    <>
       {isLoading ? (
         <SkeletonGrid />
       ) : (
         <>
           <MovieGrid movies={movies} />
-          <Pagination
-            currentPage={currentPage}
-            totalPages={currentTotalPages}
-          />
+          {currentTotalPages > 1 && (
+            <Pagination
+              currentPage={currentPage}
+              totalPages={currentTotalPages}
+              onPageChange={handlePageChange}
+            />
+          )}
         </>
       )}
-    </Suspense>
+    </>
   );
 }
